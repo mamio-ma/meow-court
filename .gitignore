@@ -1,41 +1,53 @@
-# 依赖
-node_modules/
-.pnp
-.pnp.js
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# 构建产物
-.next/
-out/
-build/
-dist/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# 环境变量 —— 绝对不能进 git
-.env
-.env.local
-.env.*.local
+# testing
+/coverage
 
-# 调试
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+*.pem
+*.swp
+
+# editors
+.vscode/
+.idea/
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# 编辑器
-.vscode/
-.idea/
-*.swp
+# env files (can opt-in for committing if needed)
+.env*
 
-# 系统
-.DS_Store
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
 # 头脑风暴中间产物（visual companion mockups）
 .superpowers/
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
 
 # 猫猫原图作为素材放 public/，根目录这张源图不入 git
 /judge cat.png
