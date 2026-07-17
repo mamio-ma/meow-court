@@ -4,6 +4,22 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Feline Court 8+1 暖色调色板 —— 温暖的猫猫法庭主题色 */
+@theme {
+  --color-cream: #fef7ee;    /* 最亮，输入框底、卡片底 */
+  --color-peach: #faeadd;    /* 暖桃，页面背景 */
+  --color-honey: #f5d5c0;    /* 蜜杏，卡片渐变中段 */
+  --color-sand: #ebc3b0;     /* 沙粉，边框、二级块 */
+  --color-rose: #d4879a;     /* 玫瑰，甲方/上诉/情绪强调 */
+  --color-terra: #c88a6a;    /* 陶土，主按钮、乙方 */
+  --color-cinnamon: #a06753; /* 肉桂，判决/权威文字 */
+  --color-cocoa: #6b4c3b;    /* 暖棕，正文字色 */
+  --color-accept: #7a8759;   /* 鼠尾草绿——唯一冷色点缀，接受/亲密度上升 */
+
+  /* 全局字体变量，Nunito 圆润无衬线，配可爱猫猫风格 */
+  --font-nunito: var(--font-nunito), 'Nunito', system-ui, sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -121,8 +137,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* body 使用 Feline Court 暖桃背景 + 暖棕正文色，字体默认 Nunito */
   body {
-    @apply bg-background text-foreground;
+    background: var(--color-peach);
+    color: var(--color-cocoa);
+    font-family: var(--font-nunito);
   }
   html {
     @apply font-sans;
