@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "🐱⚖️ 猫猫大法官",
+    "subtitle": "Feline Court · Est. 2026",
+    "start": "开始审判 ⚖️",
+    "tagline": "本喵今日为您调解 ✧"
+  },
+  "mode": {
+    "title": "选择审判方式",
+    "single": "一起用一台手机",
+    "single_desc": "两人共用一个屏幕，最简单",
+    "remote": "分别在两台手机",
+    "remote_desc": "生成 6 位房间码，各自打开链接",
+    "your_code": "你的房间码",
+    "share_hint": "把这串码告诉对方"
+  },
+  "input": {
+    "your_name": "你的名字",
+    "what_happened": "发生了什么",
+    "why_angry": "你为什么生气",
+    "submit": "🐱 交给猫猫审判 ⚖️",
+    "waiting_opponent": "对方还在书写状纸 🐾..."
+  },
+  "animation": {
+    "thinking": "本喵正在思考",
+    "generating": "生成判决中...",
+    "second_thinking": "本喵重新审阅卷宗..."
+  },
+  "verdict": {
+    "title": "⚖️ 判决书",
+    "final_title": "🔒 终审判决",
+    "core_conflict": "核心矛盾",
+    "responsibility": "责任比例",
+    "declaration": "本喵宣判",
+    "reconciliation": "和解方案",
+    "accept": "接受判决 ✓",
+    "appeal": "我要上诉 ↑",
+    "accept_only": "接受并执行",
+    "waiting_opponent_decision": "等待对方决定...",
+    "felony": "重罪",
+    "misdemeanor": "轻罪"
+  },
+  "appeal": {
+    "title": "二审补陈",
+    "your_supplement": "补充新信息",
+    "placeholder": "如：她昨天也吃了我留的饼干...",
+    "waiting_response": "对方回应中",
+    "seconds": "秒",
+    "submit": "提交二审 →",
+    "skipped": "对方选择不补充"
+  },
+  "checklist": {
+    "title": "和解任务",
+    "intimacy_added": "亲密度",
+    "total": "亲密度",
+    "success": "和解成功！",
+    "next_case": "开启下一案 →"
+  },
+  "error": {
+    "sleepy": "本喵犯困了，再敲一次法槌？",
+    "archived": "本案卷宗已归档 📂 · 请开启新案",
+    "retry": "重敲法槌"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "🐱⚖️ Chief Justice Whiskers",
+    "subtitle": "Feline Court · Est. 2026",
+    "start": "Open Court ⚖️",
+    "tagline": "Purr-siding today, meow ✧"
+  },
+  "mode": {
+    "title": "Pick a mode",
+    "single": "One phone, together",
+    "single_desc": "Share a single screen — simplest",
+    "remote": "Two phones, separately",
+    "remote_desc": "Generate a 6-char room code",
+    "your_code": "Your room code",
+    "share_hint": "Send this code to the other side"
+  },
+  "input": {
+    "your_name": "Your name",
+    "what_happened": "What happened",
+    "why_angry": "Why you're upset",
+    "submit": "🐱 Submit to the Cat ⚖️",
+    "waiting_opponent": "The other side is still writing 🐾..."
+  },
+  "animation": {
+    "thinking": "The cat is deliberating",
+    "generating": "Drafting the verdict...",
+    "second_thinking": "The cat is re-reviewing the docket..."
+  },
+  "verdict": {
+    "title": "⚖️ Verdict",
+    "final_title": "🔒 Final Verdict",
+    "core_conflict": "Core Conflict",
+    "responsibility": "Responsibility Ratio",
+    "declaration": "Ruling",
+    "reconciliation": "Reconciliation",
+    "accept": "Accept ✓",
+    "appeal": "Appeal ↑",
+    "accept_only": "Accept & Execute",
+    "waiting_opponent_decision": "Waiting for the other side...",
+    "felony": "Felony",
+    "misdemeanor": "Misdemeanor"
+  },
+  "appeal": {
+    "title": "Appeal Supplement",
+    "your_supplement": "Add new info",
+    "placeholder": "e.g., She ate my cookies yesterday too...",
+    "waiting_response": "Awaiting reply",
+    "seconds": "s",
+    "submit": "Submit Appeal →",
+    "skipped": "The other side declined to reply"
+  },
+  "checklist": {
+    "title": "Reconciliation Tasks",
+    "intimacy_added": "Intimacy",
+    "total": "Intimacy",
+    "success": "Reconciled! 💚",
+    "next_case": "New Case →"
+  },
+  "error": {
+    "sleepy": "The cat is drowsy — try again?",
+    "archived": "This case has been archived 📂",
+    "retry": "Bang the gavel again"
+  }
+}
