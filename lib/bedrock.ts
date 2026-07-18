@@ -161,13 +161,17 @@ export async function* streamVerdict(
 
   // 流结束，最终严格解析 + zod 校验
   // 严格模式：不容忍任何格式错误。invalid JSON 直接抛，交给上层重试/降级。
+  // 注：spec §7 要求"invalid JSON 内部重试 1 次"——这层重试放在 API route (Task 11)
+  // 而非 generator 内部，因为重试要重放 SSE 而非重新累积同一个流。
   const finalParsed = JSON.parse(accumulated);
   const validated = VerdictSchema.parse(finalParsed);
   yield { type: 'done', verdict: validated };
 }
 
 // 判断某个 top-level key 后面是否已出现"这段确实结束"的标记：
-// 要么整个顶层对象已闭合（balancedDepth 变负），要么已经出现下一个 key 的 `,"` 引导符。
+// 判断某个 top-level key 对应的值是否已经完整可 emit：
+// 从 "key": 之后扫描，若值本身的括号/引号已经收尾（对基元值：走到 `,` 或顶层 `}`；
+// 对 object/array 值：内部深度从 1 回到 0），就是完成。
 // 用这个"完成信号"避免把 partial-json 半吊子解析的中间态错发给前端。
 function isSectionComplete(partial: any, key: string, raw: string): boolean {
   const val = partial[key];
@@ -178,17 +182,21 @@ function isSectionComplete(partial: any, key: string, raw: string): boolean {
   const match = raw.match(keyPattern);
   if (!match) return false;
   const afterKey = raw.slice(match.index! + match[0].length);
-  // afterKey 里如果 depth 回到 0（顶层 } 收尾），或紧接着出现下一 key 的 `,"`
-  const depth = balancedDepth(afterKey);
-  return depth.balanced || /,\s*"/m.test(afterKey);
+  return valueIsClosed(afterKey);
 }
 
-// 扫描字符串统计括号深度——遇到闭合到 0 或负则返回 balanced=true。
-// 注意跳过字符串内的括号（考虑转义），否则遇到 charge:"独食}罪" 会误判。
-function balancedDepth(s: string): { balanced: boolean } {
+// 扫描 `"key":` 之后的字符串，判断该值是否已完整闭合。
+// 三种情况都算已完整：
+//   1. 顶层对象闭合（depth < 0，说明超过了本值范围到达外层 `}`）
+//   2. 本值是 object/array，其内部深度从首个开括号回到 0（意味着本值收尾）
+//   3. 本值是基元（字符串/数字/布尔），后面出现 `,` 分隔符（意味着下一个字段开始）
+// 字符串内部的括号/逗号必须跳过——支持转义与 emoji。
+function valueIsClosed(s: string): boolean {
   let depth = 0;
+  let opened = false; // 是否已经进入过 object/array
   let inString = false;
   let escape = false;
+
   for (const ch of s) {
     if (escape) {
       escape = false;
@@ -203,9 +211,22 @@ function balancedDepth(s: string): { balanced: boolean } {
       continue;
     }
     if (inString) continue;
-    if (ch === '{' || ch === '[') depth++;
-    if (ch === '}' || ch === ']') depth--;
-    if (depth < 0) return { balanced: true };
+
+    if (ch === '{' || ch === '[') {
+      depth++;
+      opened = true;
+      continue;
+    }
+    if (ch === '}' || ch === ']') {
+      depth--;
+      // 情况 1：外层 } 提前出现（顶层对象闭合）
+      if (depth < 0) return true;
+      // 情况 2：本值是 object/array，深度从 >0 回到 0，说明本值收尾
+      if (opened && depth === 0) return true;
+      continue;
+    }
+    // 情况 3：基元值，处在顶层且遇到 `,`——说明本值已完整，下一个字段开始
+    if (ch === ',' && !opened && depth === 0) return true;
   }
-  return { balanced: false };
+  return false;
 }

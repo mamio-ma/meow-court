@@ -70,4 +70,74 @@ describe('streamVerdict', () => {
       for await (const ev of streamVerdict('sys', 'user')) events.push(ev);
     }).rejects.toThrow();
   });
+
+  // 处理 chunk 从字符串值内部切分的情况——防止 partial-json 的中间态被 emit
+  it('handles chunks that split mid-string value', async () => {
+    const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
+    const mockStream = async function* () {
+      yield { contentBlockDelta: { delta: { toolUse: { input: '{"core_conflict":"芝士战' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: '争"' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"responsibility":{"left":50,"right":50}' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"crimes":[{"side":"left","charge":"x","severity":"重罪","reasoning":"x"}]' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"reconciliation_checklist":[{"id":"1","task":"抱抱","intimacy_points":10}]' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"cat_closing_line":"🐾"}' } } } };
+      yield { messageStop: {} };
+    };
+    (BedrockRuntimeClient as any).mockImplementation(function () {
+      return { send: () => Promise.resolve({ stream: mockStream() }) };
+    });
+
+    const { streamVerdict } = await import('./bedrock');
+    const events: any[] = [];
+    for await (const ev of streamVerdict('sys', 'user')) events.push(ev);
+
+    const coreEvent = events.find((e) => e.type === 'section' && e.section === 'core_conflict');
+    // 关键断言：core_conflict 事件应发出完整"芝士战争"而非中间态"芝士战"
+    expect(coreEvent?.content).toBe('芝士战争');
+    expect(events.at(-1)?.type).toBe('done');
+  });
+
+  // 字符串值内含 `{` `}` `,"` 等字符时，boundary 检测不应误判为闭合
+  it('does not confuse brackets inside string values', async () => {
+    const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
+    const mockStream = async function* () {
+      yield { contentBlockDelta: { delta: { toolUse: { input: '{"core_conflict":"她说\\"我错了\\", 独食}罪"' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"responsibility":{"left":60,"right":40}' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"crimes":[{"side":"left","charge":"x","severity":"重罪","reasoning":"y"}]' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"reconciliation_checklist":[{"id":"1","task":"z","intimacy_points":5}]' } } } };
+      yield { contentBlockDelta: { delta: { toolUse: { input: ',"cat_closing_line":"end"}' } } } };
+      yield { messageStop: {} };
+    };
+    (BedrockRuntimeClient as any).mockImplementation(function () {
+      return { send: () => Promise.resolve({ stream: mockStream() }) };
+    });
+
+    const { streamVerdict } = await import('./bedrock');
+    const events: any[] = [];
+    for await (const ev of streamVerdict('sys', 'user')) events.push(ev);
+
+    const coreEvent = events.find((e) => e.type === 'section' && e.section === 'core_conflict');
+    expect(coreEvent?.content).toContain('独食}罪');
+    expect(events.at(-1)?.type).toBe('done');
+  });
+
+  // Bedrock 流中途抛错时，生成器应向上传播，且不发出 done
+  it('propagates errors from the underlying stream', async () => {
+    const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
+    const mockStream = async function* () {
+      yield { contentBlockDelta: { delta: { toolUse: { input: '{"core_conflict":"x"' } } } };
+      throw new Error('bedrock throttled');
+    };
+    (BedrockRuntimeClient as any).mockImplementation(function () {
+      return { send: () => Promise.resolve({ stream: mockStream() }) };
+    });
+
+    const { streamVerdict } = await import('./bedrock');
+    const events: any[] = [];
+    await expect(async () => {
+      for await (const ev of streamVerdict('sys', 'user')) events.push(ev);
+    }).rejects.toThrow(/bedrock throttled/);
+    // 确保没有 done 事件
+    expect(events.find((e) => e.type === 'done')).toBeUndefined();
+  });
 });
