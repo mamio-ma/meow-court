@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
-// 罪名的严重程度——只允许两级中英文，防止 LLM 输出"死刑"这种破坏可爱风的词
+// 罪名的严重程度
+// 中英各两级都接受，因为 LLM 的输出语言取决于 case.language；单次判决内保持一致。
+// UI 层用 isFelony(severity) 归一化判断，避免消费者到处写 "重罪 || felony"。
 export const SeveritySchema = z.enum(['重罪', '轻罪', 'felony', 'misdemeanor']);
+
+// 归一化判断：是否为重罪。UI 或统计代码统一走这里，防止四个枚举值散落各处判断。
+export function isFelony(s: z.infer<typeof SeveritySchema>): boolean {
+  return s === '重罪' || s === 'felony';
+}
 
 // 单方陈述——三个字段都必填非空
 export const PartyStatementSchema = z.object({
@@ -13,42 +20,51 @@ export const PartyStatementSchema = z.object({
 });
 
 // 判决书——LLM 通过 tool_use 输出，用 zod 强校验
-export const VerdictSchema = z.object({
-  // 一句话概括核心冲突，作为判决书标题
-  core_conflict: z.string().min(1),
-  // 双方责任比例，必须是整数且相加为 100
-  responsibility: z
-    .object({
-      left: z.number().int().min(0).max(100),
-      right: z.number().int().min(0).max(100),
-    })
-    .refine((r) => r.left + r.right === 100, {
-      message: '责任比例必须相加等于 100',
-    }),
-  // 罪名列表——至少一条，标明是哪一方的过错
-  crimes: z
-    .array(
-      z.object({
-        side: z.enum(['left', 'right']),
-        charge: z.string().min(1),
-        severity: SeveritySchema,
-        reasoning: z.string().min(1),
+// 用 .strict() 拒绝未知字段：如果 LLM 幻觉出多余键，我们要显式失败并重试，
+// 而不是静默丢弃（那样调试很痛苦）。
+export const VerdictSchema = z
+  .object({
+    // 一句话概括核心冲突，作为判决书标题
+    core_conflict: z.string().min(1),
+    // 双方责任比例，必须是整数且相加为 100
+    responsibility: z
+      .object({
+        left: z.number().int().min(0).max(100),
+        right: z.number().int().min(0).max(100),
+      })
+      .strict()
+      .refine((r) => r.left + r.right === 100, {
+        message: '责任比例必须相加等于 100',
       }),
-    )
-    .min(1),
-  // 和解清单——完成后可以增加亲密度积分
-  reconciliation_checklist: z
-    .array(
-      z.object({
-        id: z.string().min(1),
-        task: z.string().min(1),
-        intimacy_points: z.number().int().min(1).max(30),
-      }),
-    )
-    .min(1),
-  // 猫法官的收束语，通常包含一个可爱的 emoji
-  cat_closing_line: z.string().min(1),
-});
+    // 罪名列表——至少一条，标明是哪一方的过错
+    crimes: z
+      .array(
+        z
+          .object({
+            side: z.enum(['left', 'right']),
+            charge: z.string().min(1),
+            severity: SeveritySchema,
+            reasoning: z.string().min(1),
+          })
+          .strict(),
+      )
+      .min(1),
+    // 和解清单——完成后可以增加亲密度积分
+    reconciliation_checklist: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            task: z.string().min(1),
+            intimacy_points: z.number().int().min(1).max(30),
+          })
+          .strict(),
+      )
+      .min(1),
+    // 猫法官的收束语，一般以可爱 emoji 收尾（非强制，交给 LLM 的品味）
+    cat_closing_line: z.string().min(1),
+  })
+  .strict();
 
 // 一场 case 的完整状态——覆盖单机与远程双人模式
 export const CaseSchema = z.object({

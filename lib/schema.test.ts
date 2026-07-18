@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VerdictSchema, PartyStatementSchema, CaseSchema } from './schema';
+import { VerdictSchema, PartyStatementSchema, CaseSchema, isFelony } from './schema';
 
 describe('VerdictSchema', () => {
   it('accepts a valid verdict', () => {
@@ -38,11 +38,49 @@ describe('VerdictSchema', () => {
     };
     expect(() => VerdictSchema.parse(bad)).toThrow();
   });
+
+  it('accepts boundary responsibility 100/0', () => {
+    const boundary = {
+      core_conflict: 'x',
+      responsibility: { left: 100, right: 0 },
+      crimes: [{ side: 'left', charge: 'x', severity: '重罪', reasoning: 'x' }],
+      reconciliation_checklist: [{ id: '1', task: 'x', intimacy_points: 10 }],
+      cat_closing_line: 'x',
+    };
+    expect(() => VerdictSchema.parse(boundary)).not.toThrow();
+  });
+
+  it('rejects unknown extra keys (strict mode blocks LLM hallucinations)', () => {
+    const withExtra = {
+      core_conflict: 'x',
+      responsibility: { left: 50, right: 50 },
+      crimes: [{ side: 'left', charge: 'x', severity: '重罪', reasoning: 'x' }],
+      reconciliation_checklist: [{ id: '1', task: 'x', intimacy_points: 10 }],
+      cat_closing_line: 'x',
+      hallucinated_field: 'oops',
+    };
+    expect(() => VerdictSchema.parse(withExtra)).toThrow();
+  });
 });
 
 describe('PartyStatementSchema', () => {
   it('requires all fields', () => {
     expect(() => PartyStatementSchema.parse({ name: '', narrative: '', grievance: '' })).toThrow();
+  });
+
+  it('accepts a valid statement', () => {
+    expect(() =>
+      PartyStatementSchema.parse({ name: '甲', narrative: 'x', grievance: 'y' }),
+    ).not.toThrow();
+  });
+});
+
+describe('isFelony', () => {
+  it('normalizes zh + en to a single predicate', () => {
+    expect(isFelony('重罪')).toBe(true);
+    expect(isFelony('felony')).toBe(true);
+    expect(isFelony('轻罪')).toBe(false);
+    expect(isFelony('misdemeanor')).toBe(false);
   });
 });
 
