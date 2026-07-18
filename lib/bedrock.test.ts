@@ -16,7 +16,7 @@ describe('streamVerdict', () => {
     vi.resetModules();
     process.env.AWS_BEARER_TOKEN_BEDROCK = 'test-token';
     process.env.AWS_REGION = 'us-east-1';
-    process.env.BEDROCK_MODEL_ID = 'anthropic.claude-sonnet-4-6';
+    process.env.BEDROCK_MODEL_ID = 'us.anthropic.claude-sonnet-4-6';
   });
 
   it('parses streamed tool_use JSON and emits section events', async () => {

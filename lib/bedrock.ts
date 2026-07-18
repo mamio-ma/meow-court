@@ -98,7 +98,9 @@ export async function* streamVerdict(
   userPrompt: string,
 ): AsyncGenerator<StreamEvent> {
   const client = getClient();
-  const modelId = process.env.BEDROCK_MODEL_ID ?? 'anthropic.claude-sonnet-4-6';
+  // Bedrock Sonnet 4.6 需要 inference profile ID（`us.` 前缀），不能用 model ID 直接调用
+  // ——on-demand throughput 已废弃。默认走 US regional profile。
+  const modelId = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-6';
 
   const command = new ConverseStreamCommand({
     modelId,
