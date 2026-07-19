@@ -1,70 +1,46 @@
-// 临时色板测试页 —— 用来验证 Feline Court 9 色 token 是否正常工作
-// Task 23 完成后，此页会被真正的猫猫法庭 Landing 页替换
-//
-// ⚠️ Tailwind 4 静态扫描类名，不能用 `bg-${c}` 动态拼接，所以这里写成字面量数组
-import Image from "next/image";
+'use client';
 
-const swatches = [
-  { name: "cream", cls: "bg-cream" },
-  { name: "peach", cls: "bg-peach" },
-  { name: "honey", cls: "bg-honey" },
-  { name: "sand", cls: "bg-sand" },
-  { name: "rose", cls: "bg-rose" },
-  { name: "terra", cls: "bg-terra" },
-  { name: "cinnamon", cls: "bg-cinnamon" },
-  { name: "cocoa", cls: "bg-cocoa" },
-  { name: "accept", cls: "bg-accept" },
-];
+import { useRouter } from 'next/navigation';
+import { JudgeCat } from '@/components/JudgeCat';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { useLanguage } from '@/components/LanguageProvider';
 
+// Landing 屏（Screen 1）——猫猫大图 + tagline + 开始按钮 + 中英切换
+// 点击“开始审判”跳转 /mode 进入模式选择（Screen 2）
 export default function Home() {
+  // 从 LanguageProvider 拿到翻译树；t.app.* 承载本页所有文案
+  const { t } = useLanguage();
+  // Next.js App Router 客户端导航——避免整页刷新
+  const router = useRouter();
+
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      {/* 猫猫头像预览——用金框裱起来做视觉锚点 */}
-      <div className="flex flex-col items-center gap-4">
-        <div
-          className="rounded-2xl p-2 shadow-lg"
-          style={{
-            background: "linear-gradient(135deg, #e8a583 0%, #c88a6a 100%)",
-          }}
-        >
-          <Image
-            src="/judge-cat.png"
-            alt="Chief Justice Whiskers"
-            width={240}
-            height={240}
-            className="rounded-xl object-cover"
-            priority
-          />
-        </div>
-        <span className="rounded-full bg-rose text-cream px-4 py-1 text-xs font-bold border-2 border-cream shadow-md -mt-6">
-          CHIEF JUSTICE 🐾
-        </span>
-
-        <div className="text-center mt-4">
-          <div className="text-xs uppercase tracking-[0.3em] text-cinnamon">
-            Feline Court · Est. 2026
-          </div>
-          <h1 className="text-4xl font-extrabold text-cocoa mt-1">
-            🐱⚖️ 猫猫大法官
-          </h1>
-          <p className="mt-2 italic text-cinnamon">
-            本喵今日为您调解 ✧（临时色板 · Landing 待 Task 23 完成）
-          </p>
-        </div>
+    <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-6 relative">
+      {/* 右上角语言切换，绝对定位不影响主轴布局 */}
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
       </div>
 
-      {/* 色板 */}
-      <div className="flex flex-wrap gap-4 mt-10 justify-center">
-        {swatches.map((s) => (
-          <div key={s.name} className="flex flex-col items-center gap-1">
-            <div
-              className={`w-20 h-20 rounded-lg border border-cocoa/10 shadow-sm ${s.cls}`}
-              title={s.name}
-            />
-            <span className="text-xs text-cocoa font-semibold">{s.name}</span>
-          </div>
-        ))}
+      {/* 猫猫大法官 hero——idle 状态（不做微动画），底部挂 CHIEF JUSTICE 徽章 */}
+      <JudgeCat state="idle" size={240} showBadge />
+
+      {/* 标题区：小标 · 主标 · tagline 三行叠置，视觉锚点在主标上 */}
+      <div className="text-center space-y-2 mt-6">
+        <div className="text-xs uppercase tracking-[0.3em] text-cinnamon">
+          {t.app.subtitle}
+        </div>
+        <h1 className="text-4xl font-extrabold text-cocoa">
+          {t.app.title}
+        </h1>
+        <p className="text-cinnamon italic">{t.app.tagline}</p>
       </div>
-    </div>
+
+      {/* CTA：胶囊按钮 + rose→cinnamon 渐变，视觉上呼应色板主色 */}
+      <button
+        onClick={() => router.push('/mode')}
+        className="px-10 py-4 rounded-full bg-gradient-to-br from-rose to-cinnamon text-cream font-bold text-lg shadow-lg hover:shadow-xl transition"
+      >
+        {t.app.start}
+      </button>
+    </main>
   );
 }
