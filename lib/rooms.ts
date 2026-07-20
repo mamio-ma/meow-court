@@ -8,13 +8,18 @@ const generateCode = customAlphabet('ABCDEFGHJKMNPQRSTUVWXYZ23456789', 6);
 const TTL_SECONDS = 24 * 60 * 60; // 24 小时后 Redis 自动清
 
 // Upstash 客户端 lazy 初始化——避免测试环境无环境变量时崩溃
+// 兼容两种命名：UPSTASH_REDIS_REST_*（旧版 / 手动配）
+// 或 KV_REST_API_*（新版 Vercel Marketplace Integration 自动注入）
 let redisInstance: Redis | null = null;
 function redis(): Redis {
   if (!redisInstance) {
-    redisInstance = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    });
+    const url =
+      process.env.UPSTASH_REDIS_REST_URL ??
+      process.env.KV_REST_API_URL;
+    const token =
+      process.env.UPSTASH_REDIS_REST_TOKEN ??
+      process.env.KV_REST_API_TOKEN;
+    redisInstance = new Redis({ url: url!, token: token! });
   }
   return redisInstance;
 }
