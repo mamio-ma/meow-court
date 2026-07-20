@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐱⚖️ 猫猫大法官 · Feline Court
 
-## Getting Started
+情侣可爱风格 AI 调解 app——三花猫大法官 Chief Justice Whiskers 用「以和为贵」的口吻为你们判决。
 
-First, run the development server:
+## 特性
+
+- **中英双语**——中/EN 一键切换
+- **两种模式**：单机（一台手机，两人轮流填）或远程（6 位房间码，两台手机各自打开）
+- **可爱判决**：玩梗罪名（"独食未告知罪"）+ 责任比例（60/40）+ 增进感情的和解方案
+- **上诉机制**：不服可上诉，二审终局
+- **和解 Checklist**：完成任务累计亲密度
+- **流式生成**：SSE 逐段输出判决，等待感 → 期待感
+
+## 技术栈
+
+- Next.js 16 · React 19 · TypeScript · Tailwind CSS 4
+- Framer Motion (动画) · shadcn/ui (组件底座)
+- AWS Bedrock (Claude Sonnet 4.6, `us.` inference profile) · Upstash Redis (远程模式房间, 24h TTL)
+- Vitest (unit) · Playwright (E2E) · zod (schema)
+
+## 本地开发
 
 ```bash
+npm install
+cp .env.example .env.local
+# 编辑 .env.local 填入你的 Bedrock token；Upstash 可选（远程模式才需要）
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 测试
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test           # Vitest unit (30+ tests)
+npm run test:e2e   # Playwright E2E (2 tests, single-mode happy path)
+```
 
-## Learn More
+## 部署到 Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Push 到 GitHub
+2. Vercel Dashboard → New Project → Import 该 repo
+3. Framework Preset: Next.js（自动检测）
+4. Environment Variables：粘贴 `.env.example` 里列出的所有 key + 真实值
+5. Upstash Redis：Vercel Marketplace → Add Integration → Upstash → provision 一个免费 Redis DB（自动注入 `UPSTASH_REDIS_REST_*`）
+6. Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 项目结构
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/               # Next.js App Router
+  api/verdict/     # SSE 判决生成
+  api/rooms/       # 远程房间 CRUD
+  case/[id]/       # 单机模式全流程
+  room/[code]/     # 远程房间页
+components/        # 11 个 React 组件
+lib/               # 核心逻辑（schema/prompts/bedrock/rooms/intimacy）
+messages/          # zh.json + en.json
+e2e/               # Playwright 测试
+```
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private / 私人项目
