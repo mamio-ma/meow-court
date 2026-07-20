@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { nanoid } from 'nanoid';
 import { ModeSelector } from '@/components/ModeSelector';
@@ -11,7 +12,9 @@ import { useLanguage } from '@/components/LanguageProvider';
 // 远程：调 /api/rooms 生成 6 位房间码，hostToken 存 localStorage，然后跳 /room/[code]
 export default function ModePage() {
   const router = useRouter();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
+  // 远程模式不可用时显示的猫猫风格模态框
+  const [showRemoteError, setShowRemoteError] = useState(false);
 
   const handleSelect = async (mode: 'single' | 'remote') => {
     if (mode === 'single') {
@@ -32,9 +35,9 @@ export default function ModePage() {
       // hostToken 存 localStorage，方便房主刷新后仍能识别自己
       localStorage.setItem(`room-token:${code}`, hostToken);
       router.push(`/room/${code}`);
-    } catch (err) {
-      // 远程模式后端未配置时会 503——用 alert 简单提示（正式版可换 toast）
-      alert(`远程模式暂不可用：${(err as Error).message}`);
+    } catch {
+      // 远程模式后端未配置时会 503——弹猫猫口吻模态框，引导用户回单机
+      setShowRemoteError(true);
     }
   };
 
@@ -44,6 +47,33 @@ export default function ModePage() {
         <LanguageToggle />
       </div>
       <ModeSelector onSelect={handleSelect} />
+
+      {/* 远程不可用模态框——半透明 overlay + 中央卡片 */}
+      {showRemoteError && (
+        <div
+          className="fixed inset-0 bg-cocoa/40 flex items-center justify-center z-50 p-6"
+          onClick={() => setShowRemoteError(false)}
+        >
+          <div
+            className="bg-cream rounded-2xl border-2 border-terra shadow-xl max-w-sm w-full p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl text-center">🐾📞</div>
+            <h3 className="text-xl font-extrabold text-cocoa text-center">
+              {t.error.remote_unavailable_title}
+            </h3>
+            <p className="text-cinnamon text-center leading-relaxed">
+              {t.error.remote_unavailable_body}
+            </p>
+            <button
+              onClick={() => setShowRemoteError(false)}
+              className="w-full py-3 rounded-full bg-gradient-to-br from-terra to-cinnamon text-cream font-bold hover:shadow-lg transition"
+            >
+              {t.error.got_it}
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

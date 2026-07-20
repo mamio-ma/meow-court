@@ -59,6 +59,9 @@
   "error": {
     "sleepy": "The cat is drowsy — try again?",
     "archived": "This case has been archived 📂",
-    "retry": "Bang the gavel again"
+    "retry": "Bang the gavel again",
+    "remote_unavailable_title": "Long-distance line is down 🐾",
+    "remote_unavailable_body": "Two-phone court is still being renovated. Please use a single phone for now ✧",
+    "got_it": "Okay, meow"
   }
 }

@@ -59,6 +59,9 @@
   "error": {
     "sleepy": "本喵犯困了，再敲一次法槌？",
     "archived": "本案卷宗已归档 📂 · 请开启新案",
-    "retry": "重敲法槌"
+    "retry": "重敲法槌",
+    "remote_unavailable_title": "远程电话线还没通 🐾",
+    "remote_unavailable_body": "本喵的双人法庭功能还在装修，先用同一台手机审理吧 ✧",
+    "got_it": "好的喵"
   }
 }
