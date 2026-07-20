@@ -10,7 +10,7 @@ import {
   saveVerdict,
 } from '@/lib/rooms';
 import { buildSystemPrompt, buildUserPrompt } from '@/lib/prompts';
-import { streamVerdict } from '@/lib/bedrock';
+import { streamVerdict } from '@/lib/llm';
 import type { Case } from '@/lib/schema';
 
 export const runtime = 'nodejs';

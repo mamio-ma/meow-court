@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { CaseSchema } from '@/lib/schema';
 import { buildSystemPrompt, buildUserPrompt } from '@/lib/prompts';
-import { streamVerdict } from '@/lib/bedrock';
+import { streamVerdict } from '@/lib/llm';
 
 // Node runtime——Bedrock SDK 需要 Node，不用 Edge
 export const runtime = 'nodejs';
